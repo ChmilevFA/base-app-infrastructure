@@ -52,6 +52,30 @@ resource "aws_ecr_repository_policy" "ecr_repository_template_app_java" {
   policy     = local.ecr_policy
 }
 
+resource "aws_ecr_lifecycle_policy" "ecr_repository_template_app_java-policy" {
+  repository = aws_ecr_repository.ecr_repository_template_app_java.name
+
+  policy = <<EOF
+{
+    "rules": [
+        {
+            "rulePriority": 1,
+            "description": "Expire images older than 1 day",
+            "selection": {
+                "tagStatus": "untagged",
+                "countType": "sinceImagePushed",
+                "countUnit": "days",
+                "countNumber": 1
+            },
+            "action": {
+                "type": "expire"
+            }
+        }
+    ]
+}
+EOF
+}
+
 # Create and set up ECS cluster
 resource "aws_ecs_cluster" "ecs_cluster_template_app_java" {
   name = "ecs-template_app_java"
